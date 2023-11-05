@@ -54,23 +54,39 @@ async function run() {
 
     const serviceCollection = client.db("carDoctor").collection("services");
     const bookingCollection = client.db("carDoctor").collection("bookings");
+    
+    
+    
     //auth related api
     app.post('/jwt',logger,async(req,res)=>{
       const user = req.body;
       console.log(user);
       const token = jwt.sign(user,process.env.ACCESS_TOKEN_SECRET,{expiresIn:'1h'})
       
+      
+      
       // set cookie
       res
       .cookie('token',token,{
         httpOnly:true,
         secure:false, // http://localhost:5173/login
-        // sameSite:'none' // client port 5173 , server 5000 port
+        // sameSite:'strict' eta dile kaj kore na ba kicu na dile o kaj kore
+        // sameSite:'strict' eta dile kaj kore // client port 5173 , server 5000 port
       })
       .send({success:true});
       // res.send(token)
 
     })
+
+    app.post('/logout',async(req,res)=>{
+      const user =req.body;
+      console.log('logging out',user); //caile data base e rakhte parbo dorkar porle
+      res.clearCookie('token',{maxAge:0}).send({success:true})
+    })
+
+
+
+    
     
     //services related api
     app.get("/services",logger, async (req, res) => {
@@ -78,6 +94,7 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
+    
 
     app.get("/services/:id", async (req, res) => {
       const id = req.params.id;
