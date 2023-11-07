@@ -28,7 +28,7 @@ const logger = async(req,res,next)=>{
 }
 
 const verifyToken = async(req,res,next)=>{
-  const token = req.cookies?.token;
+  const token = req.cookies?.token; //token name e set korci tai get o korte parbo token name e .
   console.log('value of token in middleware',token);
   if (!token) {
     return res.status(401).send({message:'unauthorized'})
@@ -46,7 +46,7 @@ const verifyToken = async(req,res,next)=>{
     next();
   })
 }
-
+//database er jabotio kaj ei run fun er vitore korte hobe
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
@@ -75,7 +75,7 @@ async function run() {
       })
       .send({success:true});
       // res.send(token)
-
+ 
     })
 
     app.post('/logout',async(req,res)=>{
@@ -90,7 +90,22 @@ async function run() {
     
     //services related api
     app.get("/services",logger, async (req, res) => {
-      const cursor = serviceCollection.find();
+      const filter = req.query;
+      console.log(filter)
+       const query ={
+        // price:{$gt:50}
+        title:{$regex:filter.search,$options: "i"}
+       };
+       const options = {
+        // Sort matched documents in descending order by rating
+          sort: { 
+            price: filter.sort === 'asc' ? 1 :  -1
+           },
+
+       
+        
+      };
+      const cursor = serviceCollection.find(query, options);
       const result = await cursor.toArray();
       res.send(result);
     });
@@ -115,6 +130,11 @@ async function run() {
     //bookings
 
     app.get("/bookings", logger, verifyToken, async (req, res) => {
+      // console.log(req) 1 ta obj asbe jekhane token ,user soho ro data asbe
+
+      // const queryEmail = req.query.email;
+      // const userEmail = req.query.email
+      
       console.log(req.query.email);
       // console.log('tok tok token',req.cookies.token)
       console.log('user in the valid token',req.user)
